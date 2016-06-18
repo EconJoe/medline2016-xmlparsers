@@ -10,13 +10,13 @@ $inpath = "D:\\Research\\RAWDATA\\MEDLINE\\2016\\XML\\zip";
 $outpath = "B:\\Research\\RAWDATA\\MEDLINE\\2016\\Parsed\\Authors";
 
 # Declare which MEDLINE files to parse
-$startfile=429; $endfile=429;
+$startfile=811; $endfile=811;
 for ($fileindex=$startfile; $fileindex<=$endfile; $fileindex++) {
 
     # Create the output file, and print the variable names
     open (OUTFILE, ">:utf8", "$outpath\\medline16\_$fileindex\_authors.txt") or die "Can't open subjects file: medline16\_$fileindex\_author.txt";
     print OUTFILE "filenum	owner	status	versionid	versiondate	pmid	version	authorlistcomplete	authorvalid	";
-    print OUTFILE "lastname	forename	inititals	collectivename	authororder	authortotal\n";
+    print OUTFILE "lastname	forename	inititals	identifier	source	collectivename	authororder	authortotal	affiliation\n";
 
     # Read in XML file
     print "Reading in file: medline16n0$fileindex.xml\n";
@@ -70,7 +70,7 @@ sub mesh {
   
               if ($authorlistsize==0) {
                  print OUTFILE "$fileindex	$owner	$status	$versionid	$versiondate	$pmid	$version	null	null	";
-                 print OUTFILE "null	null	null	null	null	null\n";
+                 print OUTFILE "null	null	null	null	null	null	null	null	null\n";
               }
               
               else {
@@ -86,16 +86,40 @@ sub mesh {
                                 @lastname = @{$l->{LastName}};
                                 @forename = @{$l->{ForeName}};
                                 @initials = @{$l->{Initials}};
+                                @identifier = @{$l->{Identifier}};
                                 @collectivename = @{$l->{CollectiveName}};
+                                @affiliationinfo = @{$l->{AffiliationInfo}};
+                                $affiliationinfosize=@affiliationinfo;
                                 $authororder++;
+                                
+                                $identifier="null";
+                                $source="null";
+                                foreach $m (@identifier) {
+                                    $identifier="$m->{content}";
+                                    $source="$m->{Source}";
+                                }
 
-                                #$lastnamesize=@lastname;
-                                #$forenamesize=@forename;
-                                #$initisalssize=@initials;
-                                #$collectivenamesize=@collectivename;
+                                if ($affiliationinfosize==0) {
+                                        print OUTFILE "$fileindex	$owner	$status	$versionid	$versiondate	$pmid	$version	$complete	$valid	";
+                                        print OUTFILE "$lastname[0]	$forename[0]	$initials[0]	$identifier	$source	$collectivename[0]	$authororder	$authortotal	null\n";
+                                }
 
-                                print OUTFILE "$fileindex	$owner	$status	$versionid	$versiondate	$pmid	$version	$complete	$valid	";
-                                print OUTFILE "$lastname[0]	$forename[0]	$initials[0]	$collectivename[0]	$authororder	$authortotal\n";
+                                else {
+                                  foreach $m (@affiliationinfo) {
+                                          @affiliation = @{$m->{Affiliation}};
+
+                                          foreach $n (@affiliation) {
+
+                                            #$lastnamesize=@lastname;
+                                            #$forenamesize=@forename;
+                                            #$initisalssize=@initials;
+                                            #$collectivenamesize=@collectivename;
+
+                                            print OUTFILE "$fileindex	$owner	$status	$versionid	$versiondate	$pmid	$version	$complete	$valid	";
+                                            print OUTFILE "$lastname[0]	$forename[0]	$initials[0]	$identifier	$source	$collectivename[0]	$authororder	$authortotal	$n\n";
+                                          }
+                                  }
+                                }
                         }
                 }
               }
