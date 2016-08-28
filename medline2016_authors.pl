@@ -9,13 +9,19 @@ use XML::Simple;
 $inpath = "D:\\Research\\RAWDATA\\MEDLINE\\2016\\XML\\zip";
 $outpath = "B:\\Research\\RAWDATA\\MEDLINE\\2016\\Parsed\\Authors";
 
+####################################################################################
+open (OUTFILE_ALL, ">:utf8", "$outpath\\medline16_authors.txt") or die "Can't open subjects file: medline16_authors.txt";
+print OUTFILE_ALL "filenum	pmid	version	authorlistcomplete	authorvalid	";
+print OUTFILE_ALL "lastname	forename	inititals	identifier	source	collectivename	authororder	authortotal	affiliation\n";
+####################################################################################
+
 # Declare which MEDLINE files to parse
-$startfile=811; $endfile=811;
+$startfile=1; $endfile=812;
 for ($fileindex=$startfile; $fileindex<=$endfile; $fileindex++) {
 
     # Create the output file, and print the variable names
     open (OUTFILE, ">:utf8", "$outpath\\medline16\_$fileindex\_authors.txt") or die "Can't open subjects file: medline16\_$fileindex\_author.txt";
-    print OUTFILE "filenum	owner	status	versionid	versiondate	pmid	version	authorlistcomplete	authorvalid	";
+    print OUTFILE "filenum	pmid	version	authorlistcomplete	authorvalid	";
     print OUTFILE "lastname	forename	inititals	identifier	source	collectivename	authororder	authortotal	affiliation\n";
 
     # Read in XML file
@@ -44,18 +50,6 @@ sub mesh {
     # Access <MedlineCitation> array
     foreach $i (@{$data->{MedlineCitation}}) {
 
-            # Access the four elements of <MedlineCitation>: <Owner>, <Status>, <VersionID>, and <VersionDate>
-            $owner = "$i->{Owner}";
-            $status = "$i->{Status}";
-            $versionid = "$i->{VersionID}";
-            $versiondate = "$i->{VersionDate}";
-
-            # Assign the value "null" to any missing element
-            if ($owner eq "") { $owner = "null"; }
-            if ($status eq "") { $status = "null"; }
-            if ($versionid eq "") { $versionid = "null"; }
-            if ($versiondate eq "") { $versiondate = "null"; }
-
             @pmid = @{$i->{PMID}};
             @article = @{$i->{Article}};
 
@@ -69,8 +63,11 @@ sub mesh {
               $authorlistsize=@authorlist;
   
               if ($authorlistsize==0) {
-                 print OUTFILE "$fileindex	$owner	$status	$versionid	$versiondate	$pmid	$version	null	null	";
+                 print OUTFILE "$fileindex	$pmid	$version	null	null	";
                  print OUTFILE "null	null	null	null	null	null	null	null	null\n";
+
+                 print OUTFILE_ALL "$fileindex	$pmid	$version	null	null	";
+                 print OUTFILE_ALL "null	null	null	null	null	null	null	null	null\n";
               }
               
               else {
@@ -100,8 +97,11 @@ sub mesh {
                                 }
 
                                 if ($affiliationinfosize==0) {
-                                        print OUTFILE "$fileindex	$owner	$status	$versionid	$versiondate	$pmid	$version	$complete	$valid	";
+                                        print OUTFILE "$fileindex	$pmid	$version	$complete	$valid	";
                                         print OUTFILE "$lastname[0]	$forename[0]	$initials[0]	$identifier	$source	$collectivename[0]	$authororder	$authortotal	null\n";
+                                        
+                                        print OUTFILE_ALL "$fileindex	$pmid	$version	$complete	$valid	";
+                                        print OUTFILE_ALL "$lastname[0]	$forename[0]	$initials[0]	$identifier	$source	$collectivename[0]	$authororder	$authortotal	null\n";
                                 }
 
                                 else {
@@ -115,8 +115,11 @@ sub mesh {
                                             #$initisalssize=@initials;
                                             #$collectivenamesize=@collectivename;
 
-                                            print OUTFILE "$fileindex	$owner	$status	$versionid	$versiondate	$pmid	$version	$complete	$valid	";
+                                            print OUTFILE "$fileindex	$pmid	$version	$complete	$valid	";
                                             print OUTFILE "$lastname[0]	$forename[0]	$initials[0]	$identifier	$source	$collectivename[0]	$authororder	$authortotal	$n\n";
+                                            
+                                            print OUTFILE_ALL "$fileindex	$pmid	$version	$complete	$valid	";
+                                            print OUTFILE_ALL "$lastname[0]	$forename[0]	$initials[0]	$identifier	$source	$collectivename[0]	$authororder	$authortotal	$n\n";
                                           }
                                   }
                                 }

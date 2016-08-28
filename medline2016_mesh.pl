@@ -9,14 +9,18 @@ use XML::Simple;
 $inpath = "D:\\Research\\RAWDATA\\MEDLINE\\2016\\XML\\zip";
 $outpath = "D:\\Research\\RAWDATA\\MEDLINE\\2016\\Parsed\\MeSH";
 
+####################################################################################
+open (OUTFILE_ALL, ">:utf8", "$outpath\\medline16_mesh.txt") or die "Can't open subjects file: medline16_mesh.txt";
+print OUTFILE_ALL "filenum	pmid	version	filenum	pmid	version	mesh	ui	majortopic	type	meshgroup\n";
+####################################################################################
+
 # Declare which MEDLINE files to parse
-$startfile=779; $endfile=779;
+$startfile=1; $endfile=812;
 for ($fileindex=$startfile; $fileindex<=$endfile; $fileindex++) {
 
     # Create the output file, and print the variable names
     open (OUTFILE, ">:utf8", "$outpath\\medline16\_$fileindex\_mesh.txt") or die "Can't open subjects file: medline16\_$fileindex\_mesh.txt";
-    print OUTFILE "filenum	owner	status	versionid	versiondate	pmid	version	";
-    print OUTFILE "mesh	ui	majortopic	type	meshgroup\n";
+    print OUTFILE "filenum	pmid	version	mesh	ui	majortopic	type	meshgroup\n";
 
     # Read in XML file
     print "Reading in file: medline16n0$fileindex.xml\n";
@@ -44,18 +48,6 @@ sub mesh {
     # Access <MedlineCitation> array
     foreach $i (@{$data->{MedlineCitation}}) {
 
-            # Access the four elements of <MedlineCitation>: <Owner>, <Status>, <VersionID>, and <VersionDate>
-            $owner = "$i->{Owner}";
-            $status = "$i->{Status}";
-            $versionid = "$i->{VersionID}";
-            $versiondate = "$i->{VersionDate}";
-
-            # Assign the value "null" to any missing element
-            if ($owner eq "") { $owner = "null"; }
-            if ($status eq "") { $status = "null"; }
-            if ($versionid eq "") { $versionid = "null"; }
-            if ($versiondate eq "") { $versiondate = "null"; }
-
             @pmid = @{$i->{PMID}};
             @medlinejournalinfo = @{$i->{MedlineJournalInfo}};
             @meshheadinglist = @{$i->{MeshHeadingList}};
@@ -68,8 +60,8 @@ sub mesh {
             $meshheadinglistsize=@meshheadinglist;
 
             if ($meshheadinglistsize==0) {
-               print OUTFILE "$fileindex	$owner	$status	$versionid	$versiondate	$pmid	$version	";
-               print OUTFILE "null	null	null	null	\n";
+               print OUTFILE "$fileindex	$pmid	$version	null	null	null	null	\n";
+               print OUTFILE_ALL "$fileindex	$pmid	$version	null	null	null	null	\n";
             }
 
             foreach $j (@meshheadinglist) {
@@ -88,8 +80,8 @@ sub mesh {
                                     $ui="$l->{UI}";
                                     $type="Descriptor";
 
-                                    print OUTFILE "$fileindex	$owner	$status	$versionid	$versiondate	$pmid	$version	";
-                                    print OUTFILE "$mesh	$ui	$majortopic	$type	$meshgroup\n";
+                                    print OUTFILE "$fileindex	$pmid	$version	$mesh	$ui	$majortopic	$type	$meshgroup\n";
+                                    print OUTFILE_ALL "$fileindex	$pmid	$version	$mesh	$ui	$majortopic	$type	$meshgroup\n";
                             }
                             
                             foreach $l (@qualifiername) {
@@ -98,8 +90,8 @@ sub mesh {
                                     $ui="$l->{UI}";
                                     $type="Qualifier";
                                     
-                                    print OUTFILE "$fileindex	$owner	$status	$versionid	$versiondate	$pmid	$version	";
-                                    print OUTFILE "$mesh	$ui	$majortopic	$type	$meshgroup\n";
+                                    print OUTFILE "$fileindex	$pmid	$version	$mesh	$ui	$majortopic	$type	$meshgroup\n";
+                                    print OUTFILE_ALL "$fileindex	$pmid	$version	$mesh	$ui	$majortopic	$type	$meshgroup\n";
                             }
                     }
             }

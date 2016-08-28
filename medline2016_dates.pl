@@ -7,11 +7,17 @@ use XML::Simple;
 $inpath = "D:\\Research\\RAWDATA\\MEDLINE\\2016\\XML\\zip";
 $outpath = "D:\\Research\\RAWDATA\\MEDLINE\\2016\\Parsed\\Dates";
 
+####################################################################################
+open (OUTFILE_ALL, ">:utf8", "$outpath\\medline16_dates.txt") or die "Can't open subjects file: medline16_dates.txt";
+print OUTFILE_ALL "filenum	pmid	version	";
+print OUTFILE_ALL "pubyear	articyear	pubmonth	articmonth	pubday	articday	medlinedate\n";
+####################################################################################
+
 $startfile=1; $endfile=812;
 for ($fileindex=$startfile; $fileindex<=$endfile; $fileindex++) {
 
     open (OUTFILE, ">:utf8", "$outpath\\medline16\_$fileindex\_dates.txt") or die "Can't open subjects file: medline16\_$fileindex\_dates.txt";
-    print OUTFILE "filenum	owner	status	versionid	versiondate	pmid	version	";
+    print OUTFILE "filenum	pmid	version	";
     print OUTFILE "pubyear	articyear	pubmonth	articmonth	pubday	articday	medlinedate\n";
 
     print "Reading in file: medline16n0$fileindex.xml\n";
@@ -36,11 +42,6 @@ sub date {
     # access <MedlineCitation> array
     foreach $e (@{$data->{MedlineCitation}}) {
 
-            $owner = $e->{Owner};
-            $status = $e->{Status};
-            $versionid = $e->{VersionID};
-            $versiondate = $e->{VersionDate};
-
             $pmid = $e->{PMID}->{content};
             $version = $e->{PMID}->{Version};
 
@@ -53,11 +54,6 @@ sub date {
             $articday = $e->{Article}->{ArticleDate}->{Day};
             
             $medlinedate = $e->{Article}->{Journal}->{JournalIssue}->{PubDate}->{MedlineDate};
-
-            if ($owner eq "") { $owner="null"; }
-            if ($status eq "") { $status="null"; }
-            if ($versionid eq "") { $versionid="null"; }
-            if ($versiondate eq "") { $versiondate="null"; }
 
             if ($pmid eq "") { $pmid="null"; }
             if ($version eq "") { $version="null"; }
@@ -72,7 +68,10 @@ sub date {
 
             if ($medlinedate eq "") { $medlinedate="null"; }
 
-            print OUTFILE "$fileindex	$owner	$status	$versionid	$versiondate	$pmid	$version	";
+            print OUTFILE "$fileindex	$pmid	$version	";
             print OUTFILE "$pubyear	$articyear	$pubmonth	$articmonth	$pubday	$articday	$medlinedate\n";
+            
+            print OUTFILE_ALL "$fileindex	$pmid	$version	";
+            print OUTFILE_ALL "$pubyear	$articyear	$pubmonth	$articmonth	$pubday	$articday	$medlinedate\n";
     }
 }
