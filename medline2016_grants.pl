@@ -11,13 +11,21 @@ use XML::Simple;
 $inpath = "D:\\Research\\RAWDATA\\MEDLINE\\2016\\XML\\zip";
 $outpath = "D:\\Research\\RAWDATA\\MEDLINE\\2016\\Parsed\\Grants";
 
+####################################################################################
+open (OUTFILE_ALL, ">:utf8", "$outpath\\medline16_grants.txt") or die "Can't open subjects file: medline16_grants.txt";
+print OUTFILE_ALL "filenum	pmid	version	";
+print OUTFILE_ALL "complete	grantid	acronym	agency	country	";
+print OUTFILE_ALL "grantidsize	acronymsize	agencysize	countrysize\n";
+####################################################################################
+
+
 # Declare which MEDLINE files to parse
 $startfile=700; $endfile=700;
 for ($fileindex=$startfile; $fileindex<=$endfile; $fileindex++) {
 
     # Create the output file, and print the variable names
     open (OUTFILE, ">:utf8", "$outpath\\medline16\_$fileindex\_grants.txt") or die "Can't open subjects file: medline16\_$fileindex\_grants.txt";
-    print OUTFILE "filenum	owner	status	versionid	versiondate	pmid	version	";
+    print OUTFILE "filenum	pmid	version	";
     print OUTFILE "complete	grantid	acronym	agency	country	";
     print OUTFILE "grantidsize	acronymsize	agencysize	countrysize\n";
 
@@ -46,17 +54,6 @@ sub grant {
     # <MedlineCitation> is the top level element in MedlineCitationSet and contains one entire record
     # Access <MedlineCitation> array
     foreach $i (@{$data->{MedlineCitation}}) {
-      
-            # Access the four elements of <MedlineCitation>: <Owner>, <Status>, <VersionID>, and <VersionDate>
-            $owner = "$i->{Owner}";
-            $status = "$i->{Status}";
-            $versionid = "$i->{VersionID}";
-            $versiondate = "$i->{VersionDate}";
-
-            if ($owner eq "") { $owner = "null"; }
-            if ($status eq "") { $status = "null"; }
-            if ($versionid eq "") { $versionid = "null"; }
-            if ($versiondate eq "") { $versiondate = "null"; }
 
             @pmid = @{$i->{PMID}};
             @medlinejournalinfo = @{$i->{MedlineJournalInfo}};
@@ -73,8 +70,11 @@ sub grant {
                     $grantlistsize=@grantlist;
 
                     if ($grantlistsize==0) {
-                       print OUTFILE "$fileindex	$owner	$status	$versionid	$versiondate	$pmid	$version	null	";
+                       print OUTFILE "$fileindex	$pmid	$version	null	";
                        print OUTFILE "null	null	null	null\n";
+
+                       print OUTFILE_ALL "$fileindex	$pmid	$version	null	";
+                       print OUTFILE_ALL "null	null	null	null\n";
                     }
 
                     foreach $k (@grantlist) {
@@ -93,9 +93,13 @@ sub grant {
                                     $countrysize = @country;
 
                                     for ($m=0; $m<=$agencysize-1; $m++) {
-                                        print OUTFILE "$fileindex	$owner	$status	$versionid	$versiondate	$pmid	$version	$complete	";
+                                        print OUTFILE "$fileindex	$pmid	$version	$complete	";
                                         print OUTFILE "$grantid[$m]	$acronym[$m]	$agency[$m]	$country[$m]	";
                                         print OUTFILE "$grantidsize	$acronymsize	$agencysize	$countrysize\n";
+                                        
+                                        print OUTFILE_ALL "$fileindex	$pmid	$version	$complete	";
+                                        print OUTFILE_ALL "$grantid[$m]	$acronym[$m]	$agency[$m]	$country[$m]	";
+                                        print OUTFILE_ALL "$grantidsize	$acronymsize	$agencysize	$countrysize\n";
                                     }
                             }
                     }
