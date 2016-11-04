@@ -9,12 +9,15 @@ use XML::Simple;
 $inpath = "D:\\Research\\RAWDATA\\MEDLINE\\2016\\XML\\zip";
 $outpath = "D:\\Research\\RAWDATA\\MEDLINE\\2016\\Parsed\\PubTypes";
 
+open (OUTFILE_ALL, ">:utf8", "$outpath\\medline16_pubtypes.txt") or die "Can't open subjects file: medline16_pubtypes.txt";
+print OUTFILE_ALL "filenum	pmid	version	pubtype	ui\n";
+
 # Declare which MEDLINE files to parse
 $startfile=1; $endfile=812;
 for ($fileindex=$startfile; $fileindex<=$endfile; $fileindex++) {
 
     open (OUTFILE, ">:utf8", "$outpath\\medline16\_$fileindex\_pubtypes.txt") or die "Can't open subjects file: medline16\_$fileindex\_pubtypes.txt";
-    print OUTFILE "filenum	owner	status	versionid	versiondate	pmid	version	pubtype	ui\n";
+    print OUTFILE "filenum	pmid	version	pubtype	ui\n";
 
     print "Reading in file: medline16n0$fileindex.xml\n";
     &importfile;
@@ -37,16 +40,6 @@ sub importfile {
 sub pubtype {
 
     foreach $i (@{$data->{MedlineCitation}}) {
-      
-            $owner = "$i->{Owner}";
-            $status = "$i->{Status}";
-            $versionid = "$i->{VersionID}";
-            $versiondate = "$i->{VersionDate}";
-
-            if ($owner eq "") { $owner = "null"; }
-            if ($status eq "") { $status = "null"; }
-            if ($versionid eq "") { $versionid = "null"; }
-            if ($versiondate eq "") { $versiondate = "null"; }
 
             @pmid = @{$i->{PMID}};
             @medlinejournalinfo = @{$i->{MedlineJournalInfo}};
@@ -62,7 +55,8 @@ sub pubtype {
                     $publicationtypelistsize=@publicationtypelist;
 
                     if ($publicationtypelistsize==0) {
-                       print OUTFILE "$fileindex	$owner	$status	$versionid	$versiondate	$pmid	$version	null\n";
+                       print OUTFILE "$fileindex	$pmid	$version	null\n";
+                       print OUTFILE_ALL "$fileindex	$pmid	$version	null\n";
                     }
 
                     else {
@@ -73,7 +67,8 @@ sub pubtype {
                                             $publicationtype="$l->{content}";
                                             $ui="$l->{UI}";
 
-                                            print OUTFILE "$fileindex	$owner	$status	$versionid	$versiondate	$pmid	$version	$publicationtype	$ui\n";
+                                            print OUTFILE "$fileindex	$pmid	$version	$publicationtype	$ui\n";
+                                            print OUTFILE_ALL "$fileindex	$pmid	$version	$publicationtype	$ui\n";
                                  }
                          }
                  }
