@@ -4,18 +4,27 @@
 use XML::Simple;
 
 # Set path names
-$inpath = "D:\\Research\\RAWDATA\\MEDLINE\\2016\\XML\\zip";
-$outpath = "D:\\Research\\RAWDATA\\MEDLINE\\2016\\Parsed\\Journals";
+$outpath="B:\\Research\\RAWDATA\\MEDLINE\\2016\\Parsed\\Journals";
+$inpath="B:\\Research\\RAWDATA\\MEDLINE\\2016\\XML\\zip";
+
+open (OUTFILE_NLMID, ">:utf8", "$outpath\\medline16_nlmid.txt") or die "Can't open subjects file: medline16_nlmid.txt";
+print OUTFILE_NLMID "filenum	pmid	version	nlmid\n";
+
+open (OUTFILE_ISSN, ">:utf8", "$outpath\\medline16_issn.txt") or die "Can't open subjects file: medline16_issn.txt";
+print OUTFILE_ISSN "filenum	pmid	version	issn	issnl	issntype\n";
+
+open (OUTFILE_VINT, ">:utf8", "$outpath\\medline16_vint.txt") or die "Can't open subjects file: medline16_vint.txt";
+print OUTFILE_VINT "filenum	pmid	version	volume	issue\n";
+
+open (OUTFILE_TITLE, ">:utf8", "$outpath\\medline16_title.txt") or die "Can't open subjects file: medline16_title.txt";
+print OUTFILE_TITLE "filenum	pmid	version	journtitle	medlineta	isoabbrev\n";
+
+open (OUTFILE_OTHER, ">:utf8", "$outpath\\medline16_other.txt") or die "Can't open subjects file: medline16_other.txt";
+print OUTFILE_OTHER "filenum	pmid	version	pubmodel	artictype	citedmed	country	language\n";
 
 # Declare which MEDLINE files to parse
-$startfile=701; $endfile=701;
+$startfile=1; $endfile=812;
 for ($fileindex=$startfile; $fileindex<=$endfile; $fileindex++) {
-
-    open (OUTFILE, ">:utf8", "$outpath\\medline16\_$fileindex\_journals.txt") or die "Can't open subjects file: medline16\_$fileindex\_journals.txt";
-    print OUTFILE "filenum	owner	status	versionid	versiondate	pmid	version	nlmid	";
-    print OUTFILE "issn	issnl	volume	issue	pubmodel	";
-    print OUTFILE "artictype	issntype	citedmed	medlineta	isoabbrev	";
-    print OUTFILE "journtitle	country	language\n";
 
     print "Reading in file: medline16n0$fileindex.xml\n";
     &importfile;
@@ -39,57 +48,36 @@ sub journal {
 
     # access <MedlineCitation> array
     foreach $e (@{$data->{MedlineCitation}}) {
-      
-            $owner = $e->{Owner};
-            $status = $e->{Status};
-            $versionid = $e->{VersionID};
-            $versiondate = $e->{VersionDate};
 
-            $pmid = $e->{PMID}->{content};
-            $version = $e->{PMID}->{Version};
-
-            $volume = $e->{Article}->{Journal}->{JournalIssue}->{Volume};
-            $issue = $e->{Article}->{Journal}->{JournalIssue}->{Issue};
-            $pubmodel = $e->{Article}->{PubModel};
-            $artictype = $e->{Article}->{ArticleDate}->{DateType};
-            $issntype = $e->{Article}->{Journal}->{ISSN}->{IssnType};
-            $citedmed = $e->{Article}->{Journal}->{JournalIssue}->{CitedMedium};
-            $nlmuniqueid = $e->{MedlineJournalInfo}->{NlmUniqueID};
-            $issn = $e->{Article}->{Journal}->{ISSN}->{content};
-            $issnl = $e->{MedlineJournalInfo}->{ISSNLinking};
-            $medlineta = $e->{MedlineJournalInfo}->{MedlineTA};
-            $isoabbrev= $e->{Article}->{Journal}->{ISOAbbreviation};
-            $journtitle = $e->{Article}->{Journal}->{Title};
-            $country = $e->{MedlineJournalInfo}->{Country};
-            $language = $e->{Article}->{Language};
+            $pmid = $e->{PMID}->{content}; if ( $pmid eq "") { $pmid="null"; }
+            $version = $e->{PMID}->{Version}; if ( $version eq "") { $version="null"; }
             
-            if ($owner eq "") { $owner="null"; }
-            if ($status eq "") { $status="null"; }
-            if ($versionid eq "") { $versionid="null"; }
-            if ($versiondate eq "") { $versiondate="null"; }
+            $nlmuniqueid = $e->{MedlineJournalInfo}->{NlmUniqueID}; if ( $nlmuniqueid eq "") { $nlmuniqueid="null"; }
+            print OUTFILE_NLMID "$fileindex	$pmid	$version	$nlmuniqueid\n";
 
-            if ( $pmid eq "") { $pmid="null"; }
-            if ( $version eq "") { $version="null"; }
 
-            if ( $volume eq "") { $volume="null"; }
-            if ( $issue eq "") { $issue="null"; }
-            if ( $pubmodel eq "") { $pubmodel="null"; }
-            if ( $artictype eq "") { $artictype="null"; }
-            if ( $issntype eq "") { $issntype="null"; }
-            if ( $citedmed eq "") { $citedmed="null"; }
-            if ( $nlmuniqueid eq "") { $nlmuniqueid="null"; }
-            if ( $issn eq "") { $issn="null"; }
-            if ( $issnl eq "") { $issnl="null"; }
-            if ( $medlineta eq "") { $medlineta="null"; }
-            if ( $isoabbrev eq "") { $isoabbrev="null"; }
-            if ( $journtitle eq "") { $journtitle="null"; }
-            if ( $country eq "") { $country="null"; }
-            if ( $language eq "") { $language="null"; }
+            $issn = $e->{Article}->{Journal}->{ISSN}->{content}; if ( $issn eq "") { $issn="null"; }
+            $issnl = $e->{MedlineJournalInfo}->{ISSNLinking}; if ( $issnl eq "") { $issnl="null"; }
+            $issntype = $e->{Article}->{Journal}->{ISSN}->{IssnType}; if ( $issntype eq "") { $issntype="null"; }
+            print OUTFILE_ISSN "$fileindex	$pmid	$version	$issn	$issnl	$issntype\n";
+
+
+            $volume = $e->{Article}->{Journal}->{JournalIssue}->{Volume}; if ( $volume eq "") { $volume="null"; }
+            $issue = $e->{Article}->{Journal}->{JournalIssue}->{Issue}; if ( $issue eq "") { $issue="null"; }
+            print OUTFILE_VINT "$fileindex	$pmid	$version	$volume	$issue\n";
             
-            $journtitle =~ tr/"//d;
 
-            print OUTFILE "$fileindex	$owner	$status	$versionid	$versiondate	$pmid	$version	$nlmuniqueid	$issn	$issnl	$volume	$issue	$pubmodel	";
-            print OUTFILE "$artictype	$issntype	$citedmed	$medlineta	$isoabbrev	";
-            print OUTFILE "$journtitle	$country	$language\n";
+            $journtitle = $e->{Article}->{Journal}->{Title}; if ( $journtitle eq "") { $journtitle="null"; } $journtitle =~ tr/"//d;
+            $medlineta = $e->{MedlineJournalInfo}->{MedlineTA}; if ( $medlineta eq "") { $medlineta="null"; }
+            $isoabbrev= $e->{Article}->{Journal}->{ISOAbbreviation}; if ( $isoabbrev eq "") { $isoabbrev="null"; }
+            print OUTFILE_TITLE "$fileindex	$pmid	$version	$journtitle	$medlineta	$isoabbrev\n";
+
+
+            $pubmodel = $e->{Article}->{PubModel}; if ( $pubmodel eq "") { $pubmodel="null"; }
+            $artictype = $e->{Article}->{ArticleDate}->{DateType}; if ( $artictype eq "") { $artictype="null"; }
+            $citedmed = $e->{Article}->{Journal}->{JournalIssue}->{CitedMedium}; if ( $citedmed eq "") { $citedmed="null"; }
+            $country = $e->{MedlineJournalInfo}->{Country}; if ( $country eq "") { $country="null"; }
+            $language = $e->{Article}->{Language}; if ( $language eq "") { $language="null"; }
+            print OUTFILE_OTHER "$fileindex	$pmid	$version	$pubmodel	$artictype	$citedmed	$country	$language\n";
     }
 }
