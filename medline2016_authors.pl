@@ -6,23 +6,24 @@
 use XML::Simple;
 
 # Set path names
-$inpath = "D:\\Research\\RAWDATA\\MEDLINE\\2016\\XML\\zip";
+$inpath = "B:\\Research\\RAWDATA\\MEDLINE\\2016\\XML\\zip";
 $outpath = "B:\\Research\\RAWDATA\\MEDLINE\\2016\\Parsed\\Authors";
 
-####################################################################################
-open (OUTFILE_ALL, ">:utf8", "$outpath\\medline16_authors.txt") or die "Can't open subjects file: medline16_authors.txt";
-print OUTFILE_ALL "filenum	pmid	version	authorlistcomplete	authorvalid	";
-print OUTFILE_ALL "lastname	forename	inititals	identifier	source	collectivename	authororder	authortotal	affiliation\n";
-####################################################################################
+open (OUTFILE_BASIC, ">:utf8", "$outpath\\medline16_authors_basic.txt") or die "Can't open subjects file: medline16_authors_basic.txt";
+print OUTFILE_BASIC "filenum	pmid	version	authororder	authortotal\n";
+
+open (OUTFILE_NAME, ">:utf8", "$outpath\\medline16_authors_name.txt") or die "Can't open subjects file: medline16_authors_name.txt";
+print OUTFILE_NAME "filenum	pmid	version	authororder	authortotal	lastname	forename	inititals	collectivename\n";
+
+open (OUTFILE_AFFIL, ">:utf8", "$outpath\\medline16_authors_affil.txt") or die "Can't open subjects file: medline16_authors_affil.txt";
+print OUTFILE_AFFIL "filenum	pmid	version	authororder	authortotal	affiliation\n";
+
+open (OUTFILE_OTHER, ">:utf8", "$outpath\\medline16_authors_other.txt") or die "Can't open subjects file: medline16_authors_other.txt";
+print OUTFILE_OTHER "filenum	pmid	version	authororder	authortotal	authorlistcomplete	authorvalid	identifier	source\n";
 
 # Declare which MEDLINE files to parse
 $startfile=1; $endfile=812;
 for ($fileindex=$startfile; $fileindex<=$endfile; $fileindex++) {
-
-    # Create the output file, and print the variable names
-    open (OUTFILE, ">:utf8", "$outpath\\medline16\_$fileindex\_authors.txt") or die "Can't open subjects file: medline16\_$fileindex\_author.txt";
-    print OUTFILE "filenum	pmid	version	authorlistcomplete	authorvalid	";
-    print OUTFILE "lastname	forename	inititals	identifier	source	collectivename	authororder	authortotal	affiliation\n";
 
     # Read in XML file
     print "Reading in file: medline16n0$fileindex.xml\n";
@@ -30,7 +31,7 @@ for ($fileindex=$startfile; $fileindex<=$endfile; $fileindex++) {
 
     # Parse MEDLINE XML file
     print "Parsing file: medline16n0$fileindex.xml\n";
-    &mesh;
+    &author;
 
     # "Dump" the XML file out of memory
     $data=0;
@@ -44,7 +45,7 @@ sub importfile {
     if($fileindex>=100 && $fileindex<=812) { $data = XMLin("$inpath\\medline16n0$fileindex.xml", ForceArray => 1); }
 }
 
-sub mesh {
+sub author {
     
     # <MedlineCitation> is the top level element in MedlineCitationSet and contains one entire record
     # Access <MedlineCitation> array
@@ -63,11 +64,11 @@ sub mesh {
               $authorlistsize=@authorlist;
   
               if ($authorlistsize==0) {
-                 print OUTFILE "$fileindex	$pmid	$version	null	null	";
-                 print OUTFILE "null	null	null	null	null	null	null	null	null\n";
 
-                 print OUTFILE_ALL "$fileindex	$pmid	$version	null	null	";
-                 print OUTFILE_ALL "null	null	null	null	null	null	null	null	null\n";
+                 print OUTFILE_BASIC "$fileindex	$pmid	$version	null	null\n";
+                 print OUTFILE_NAME "$fileindex	$pmid	$version	null	null	null	null	null	null\n";
+                 print OUTFILE_OTHER "$fileindex	$pmid	$version	null	null	null	null	null	null\n";
+
               }
               
               else {
@@ -88,7 +89,7 @@ sub mesh {
                                 @affiliationinfo = @{$l->{AffiliationInfo}};
                                 $affiliationinfosize=@affiliationinfo;
                                 $authororder++;
-                                
+
                                 $identifier="null";
                                 $source="null";
                                 foreach $m (@identifier) {
@@ -97,11 +98,10 @@ sub mesh {
                                 }
 
                                 if ($affiliationinfosize==0) {
-                                        print OUTFILE "$fileindex	$pmid	$version	$complete	$valid	";
-                                        print OUTFILE "$lastname[0]	$forename[0]	$initials[0]	$identifier	$source	$collectivename[0]	$authororder	$authortotal	null\n";
-                                        
-                                        print OUTFILE_ALL "$fileindex	$pmid	$version	$complete	$valid	";
-                                        print OUTFILE_ALL "$lastname[0]	$forename[0]	$initials[0]	$identifier	$source	$collectivename[0]	$authororder	$authortotal	null\n";
+                                  
+                                        print OUTFILE_BASIC "$fileindex	$pmid	$version	$authororder	$authortotal\n";
+                                        print OUTFILE_NAME "$fileindex	$pmid	$version	$authororder	$authortotal	$lastname[0]	$forename[0]	$initials[0]	$collectivename[0]\n";
+                                        print OUTFILE_OTHER "$fileindex	$pmid	$version	$authororder	$authortotal	$complete	$valid	$identifier	$source\n";
                                 }
 
                                 else {
@@ -110,16 +110,10 @@ sub mesh {
 
                                           foreach $n (@affiliation) {
 
-                                            #$lastnamesize=@lastname;
-                                            #$forenamesize=@forename;
-                                            #$initisalssize=@initials;
-                                            #$collectivenamesize=@collectivename;
-
-                                            print OUTFILE "$fileindex	$pmid	$version	$complete	$valid	";
-                                            print OUTFILE "$lastname[0]	$forename[0]	$initials[0]	$identifier	$source	$collectivename[0]	$authororder	$authortotal	$n\n";
-                                            
-                                            print OUTFILE_ALL "$fileindex	$pmid	$version	$complete	$valid	";
-                                            print OUTFILE_ALL "$lastname[0]	$forename[0]	$initials[0]	$identifier	$source	$collectivename[0]	$authororder	$authortotal	$n\n";
+                                            print OUTFILE_BASIC "$fileindex	$pmid	$version	$authororder	$authortotal\n";
+                                            print OUTFILE_NAME "$fileindex	$pmid	$version	$authororder	$authortotal	$lastname[0]	$forename[0]	$initials[0]	$collectivename[0]\n";
+                                            print OUTFILE_OTHER "$fileindex	$pmid	$version	$authororder	$authortotal	$complete	$valid	$identifier	$source\n";
+                                            print OUTFILE_AFFIL "$fileindex	$pmid	$version	$authororder	$authortotal	$n\n";
                                           }
                                   }
                                 }
